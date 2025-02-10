@@ -1,0 +1,14 @@
+<div class="contact-container">
+   <h2>Contactez-nous</h2>
+   
+   <label for="email">Email</label>
+   <input id="email" type="email" [(ngModel)]="email" pInputText required/>
+   
+   <label for="message">Message</label>
+   <textarea id="message" [(ngModel)]="message" pTextarea rows="5" required maxlength="300"></textarea>
+   
+   <button pButton type="button" label="Envoyer" (click)="sendMessage()"></button>
+   
+   <p-message *ngIf="errorMessage" severity="info" [text]="errorMessage"></p-message>
+   <p-message *ngIf="successMessage" severity="success" [text]="successMessage"></p-message>
+</div>

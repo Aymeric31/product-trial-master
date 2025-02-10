@@ -1,0 +1,12 @@
+.contact-container {
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   max-width: 400px;
+   margin: auto;
+   padding: 20px;
+}
+
+button {
+   align-self: flex-start;
+}
