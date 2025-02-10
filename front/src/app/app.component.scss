@@ -1,0 +1,20 @@
+.app-content {
+    overflow: hidden;
+    height: 100%;
+}
+.shopping-cart-icon-container {
+    position: relative;
+}
+  
+.cart-item-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    font-size: 0.9rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 50%;
+    min-width: 20px;
+    text-align: center;
+}
