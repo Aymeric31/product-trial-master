@@ -125,7 +125,7 @@ app.delete('/products/:id', (req, res) => {
       let products = JSON.parse(data);
       const initialLength = products.length;
 
-      // Filtrer pour supprimer le produit avec l'ID correspondant
+      // Filter out the product with the given ID , if the product have the same ID = delete it from the array
       products = products.filter(product => product.id !== productId);
 
       // Check if the product was found and deleted successfully
