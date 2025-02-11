@@ -109,22 +109,4 @@ Le back-end créé doit pouvoir gérer les produits dans une base de données SQ
 
 ## Bonus
 
-Vous pouvez ajouter des tests Postman ou Swagger pour valider votre API
-
-POSTMAN:
-Poster un nouveau produit à l'aide de la requête suivante :
-POST on http://localhost:3000/products:
-
-{
-  "code": "P123",
-  "name": "Produit Test",
-  "description": "Un super produit",
-  "image": "image.jpg",
-  "category": "Tech",
-  "price": 199.99,
-  "quantity": 10,
-  "internalReference": "REF123",
-  "shellId": 1,
-  "inventoryStatus": "INSTOCK",
-  "rating": 4.5
-}
+Vous pouvez ajouter des tests Postman ou Swagger pour valider votre API (cf: /back/Integration testing products.postman_collection.json)

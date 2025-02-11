@@ -28,6 +28,8 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+karma.conf.js
+/src/test.ts
 
 # System Files
 .DS_Store
@@ -43,5 +45,5 @@ Thumbs.db
 /cypress/report
 
 # Environment
-front/src/environments/environment.ts
-front/src/environments/environment.prod.ts
+/src/environments/environment.ts
+/src/environments/environment.prod.ts

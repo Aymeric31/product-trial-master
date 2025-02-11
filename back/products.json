@@ -1,18 +1,1 @@
-[
-  {
-    "code": "P123",
-    "name": "Produit Test",
-    "description": "Un super produit",
-    "image": "image.jpg",
-    "category": "Tech",
-    "price": 199.99,
-    "quantity": 10,
-    "internalReference": "REF123",
-    "shellId": 1,
-    "inventoryStatus": "INSTOCK",
-    "rating": 4.5,
-    "id": 1,
-    "createdAt": 1739229195381,
-    "updatedAt": 1739229195381
-  }
-]
+[]
