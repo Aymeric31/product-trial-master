@@ -1,10 +1,33 @@
 const express = require("express");
 const fs = require("fs");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
 const app = express();
 
 app.use(express.json());
 
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 const PRODUCTS_FILE = "products.json";
+const USERS_FILE = 'users.json';
+
+// Fonction pour lire les utilisateurs depuis le fichier JSON
+const readUsers = () => {
+  try {
+      const data = fs.readFileSync(USERS_FILE, 'utf8');
+      return JSON.parse(data);
+  } catch (err) {
+      return []; // Retourne un tableau vide si le fichier n'existe pas encore
+  }
+};
+
+// Fonction pour écrire les utilisateurs dans le fichier JSON
+const writeUsers = (users) => {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+};
 
 app.get("/", (req, res) => {
   res.send("Bienvenue sur mon serveur Node.js !");
@@ -13,6 +36,40 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Server started on http://localhost:3000");
 });
+
+// Route to create an account
+app.post('/account', (req, res) => {
+  const { username, firstname, email, password } = req.body;
+
+  if (!username || !firstname || !email || !password) {
+      return res.status(400).json({ message: "All area are requested" });
+  }
+
+  let users = readUsers();
+
+  // Check if an account with the same email already exist
+  if (users.find(user => user.email === email)) {
+      return res.status(400).json({ message: "An account with this email already exist" });
+  }
+
+  // Password hashing
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  // New user creation
+  const newUser = {
+      id: users.length + 1,
+      username,
+      firstname,
+      email,
+      password: hashedPassword
+  };
+
+  users.push(newUser);
+  writeUsers(users);
+
+  res.status(201).json({ message: "Account created with success", user: { id: newUser.id, username, email } });
+});
+
 
 app.post('/products', (req, res) => {
    const newProduct = req.body;
