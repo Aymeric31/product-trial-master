@@ -239,3 +239,50 @@ app.delete('/products/:id', authenticateAdmin, (req, res) => {
       });
   });
 });
+
+// CART PART
+
+//FUNCTIONS
+const CART_FILE = "cart.json";
+
+// Read the cart.jsonn
+const readCart = () => {
+    try {
+        const data = fs.readFileSync(CART_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        return {}; // Si fichier vide, retourne un objet vide
+    }
+};
+
+// Write into the cart.json
+const writeCart = (cart) => {
+    fs.writeFileSync(CART_FILE, JSON.stringify(cart, null, 2));
+};
+
+//ENDPOINT
+// Create cart with products
+app.post("/cart", (req, res) => {
+  const { userId, productId, name, quantity, price } = req.body;
+
+  if (!userId || !productId || !quantity || !price) {
+      return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  let cart = readCart();
+
+  if (!cart[userId]) {
+      cart[userId] = [];
+  }
+
+  const existingProduct = cart[userId].find(p => p.id === productId);
+
+  if (existingProduct) {
+      existingProduct.quantity += quantity;
+  } else {
+      cart[userId].push({ id: productId, name, quantity, price });
+  }
+
+  writeCart(cart);
+  res.json({ message: "Product added to cart", cart: cart[userId] });
+});
