@@ -13,21 +13,44 @@ dotenv.config();
 
 const PRODUCTS_FILE = "products.json";
 const USERS_FILE = 'users.json';
-
-// Fonction pour lire les utilisateurs depuis le fichier JSON
+const SECRET_KEY = process.env.JWT_SECRET
+;
+// Function to read the users from the JSON file
 const readUsers = () => {
   try {
       const data = fs.readFileSync(USERS_FILE, 'utf8');
       return JSON.parse(data);
   } catch (err) {
-      return []; // Retourne un tableau vide si le fichier n'existe pas encore
+      return [];
   }
 };
 
-// Fonction pour écrire les utilisateurs dans le fichier JSON
+// Function to write the users to the JSON file
 const writeUsers = (users) => {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 };
+
+// Check if the user is the admin
+const authenticateAdmin = (req, res, next) => {
+  try {
+      const token = req.headers.authorization?.split(" ")[1]; // Récupérer le token après "Bearer"
+      if (!token) {
+          return res.status(401).json({ message: "Access denied. No token provided." });
+      }
+
+      const decoded = jwt.verify(token, SECRET_KEY);
+      
+      if (decoded.email !== "admin@admin.com") {
+          return res.status(403).json({ message: "Access denied. Admin only." });
+      }
+
+      req.user = decoded; // Add the user to the request object for later use
+      next();
+  } catch (error) {
+      return res.status(401).json({ message: "Invalid token." });
+  }
+};
+
 
 app.get("/", (req, res) => {
   res.send("Bienvenue sur mon serveur Node.js !");
@@ -70,8 +93,24 @@ app.post('/account', (req, res) => {
   res.status(201).json({ message: "Account created with success", user: { id: newUser.id, username, email } });
 });
 
+// User authentication
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  let users = readUsers();
+  const user = users.find((u) => u.email === email);
 
-app.post('/products', (req, res) => {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ message: "Incorrect email or password" });
+  }
+
+  // Token generation with jsonwebtoken
+  const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
+
+  res.json({ message: "Connection success", token });
+});
+
+
+app.post('/products', authenticateAdmin, (req, res) => {
    const newProduct = req.body;
 
    // Read existing products from the JSON file
@@ -135,7 +174,7 @@ app.get('/products/:id', (req, res) => {
 });
 
 // Update a product detail by ID in the JSON file
-app.patch('/products/:id', (req, res) => {
+app.patch('/products/:id', authenticateAdmin, (req, res) => {
   const productId = parseInt(req.params.id, 10); // Convert ID to number
   const updates = req.body;
 
@@ -171,7 +210,7 @@ app.patch('/products/:id', (req, res) => {
 });
 
 // Delete a product by ID from the JSON file
-app.delete('/products/:id', (req, res) => {
+app.delete('/products/:id', authenticateAdmin, (req, res) => {
   const productId = parseInt(req.params.id, 10);
 
   fs.readFile('products.json', 'utf8', (err, data) => {
