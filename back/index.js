@@ -51,6 +51,23 @@ const authenticateAdmin = (req, res, next) => {
   }
 };
 
+// Check if the user is logged in
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+      return res.status(401).json({ message: "Access denied. No token provided." });
+  }
+
+  try {
+      const decoded = jwt.verify(token.split(" ")[1], SECRET_KEY); // Get the token after "Bearer"
+      req.user = decoded; // Add data from the user with `req`
+      next();
+  } catch (error) {
+      return res.status(401).json({ message: "Invalid token." });
+  }
+};
+
 
 app.get("/", (req, res) => {
   res.send("Bienvenue sur mon serveur Node.js !");
@@ -251,7 +268,7 @@ const readCart = () => {
         const data = fs.readFileSync(CART_FILE, 'utf8');
         return JSON.parse(data);
     } catch (err) {
-        return {}; // Si fichier vide, retourne un objet vide
+        return {};
     }
 };
 
@@ -262,12 +279,15 @@ const writeCart = (cart) => {
 
 //ENDPOINT
 // Create cart with products
-app.post("/cart", (req, res) => {
-  const { userId, productId, name, quantity, price } = req.body;
+app.post("/cart", verifyToken, (req, res) => {
+  const { productId, name, quantity, price } = req.body;
 
-  if (!userId || !productId || !quantity || !price) {
+  if (!productId || !quantity || !price) {
       return res.status(400).json({ message: "Missing required fields" });
   }
+
+  // Get userID from verifyToken
+  const userId = req.user.id;
 
   let cart = readCart();
 
@@ -285,4 +305,67 @@ app.post("/cart", (req, res) => {
 
   writeCart(cart);
   res.json({ message: "Product added to cart", cart: cart[userId] });
+});
+
+// Get products from cart
+app.get("/cart/:userId", verifyToken, (req, res) => {
+  const { userId } = req.params;
+
+  // Check if the user have the same id from json request
+  if (parseInt(userId) !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden: You can only access your own cart." });
+  }
+
+  let cart = readCart();
+  res.json(cart[userId] || []);
+});
+
+// Delete a product from cart
+app.delete("/cart/:userId/:productId", verifyToken, (req, res) => {
+  const userId = req.params.userId;
+  const productId = parseInt(req.params.productId, 10);
+  const tokenUserId = req.user.id; // Get userID from verifyToken
+  let cart = readCart();
+
+  // Check if userId into URL match userId from the token
+  if (userId !== tokenUserId.toString()) {
+    return res.status(403).json({ message: "You cannot modify this cart" });
+  }
+
+  if (!cart[userId]) {
+      return res.status(404).json({ message: "Cart not found" });
+  }
+
+  // Check if the product exists in cart
+  const productExists = cart[userId].some(product => product.id === productId);
+
+  if (!productExists) {
+      return res.status(404).json({ message: "Product not found in cart" });
+  }
+
+  // Check the product ID to remove it
+  cart[userId] = cart[userId].filter(product => product.id !== productId);
+
+  writeCart(cart);
+  res.json({ message: "Product removed from cart", cart: cart[userId] });
+});
+
+app.delete("/cart/:userId", verifyToken, (req, res) => {
+  const userId = req.params.userId;
+  const tokenUserId = req.user.id; // Get userID from verifyToken
+  let cart = readCart();
+
+  // Check if userId into URL match userId from the token
+  if (userId !== tokenUserId.toString()) {
+    return res.status(403).json({ message: "You cannot modify this cart" });
+  }
+
+  if (!cart[userId]) {
+      return res.status(404).json({ message: "Cart not found" });
+  }
+
+  delete cart[userId]; // Delete completely the cart
+
+  writeCart(cart);
+  res.json({ message: "Cart cleared successfully" });
 });
