@@ -1,0 +1,57 @@
+<div class="login-container">
+   <h2>Login</h2>
+
+    <!-- Display message if the user is already connected -->
+    <div *ngIf="isConnected" class="connected-message">
+      <p>✅ Vous êtes déjà connecté.</p>
+   </div>
+
+   <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+     <!-- Email -->
+     <div>
+       <label for="email">Email</label>
+       <input 
+         id="email" 
+         type="email" 
+         name="email" 
+         [(ngModel)]="email" 
+         required 
+         email 
+         #emailField="ngModel"
+         [ngClass]="{ 'invalid': emailField.invalid && emailField.touched }"
+       />
+       <div *ngIf="emailField.invalid && emailField.touched">
+         <p *ngIf="emailField.errors?.required">Email is required.</p>
+         <p *ngIf="emailField.errors?.email">Email is invalid.</p>
+       </div>
+     </div>
+ 
+     <!-- Password -->
+     <div>
+       <label for="password">Password</label>
+       <input 
+         id="password" 
+         type="password" 
+         name="password" 
+         [(ngModel)]="password" 
+         required 
+         minlength="4" 
+         #passwordField="ngModel"
+         [ngClass]="{ 'invalid': passwordField.invalid && passwordField.touched }"
+       />
+       <div *ngIf="passwordField.invalid && passwordField.touched">
+         <p *ngIf="passwordField.errors?.required">Password is required.</p>
+         <p *ngIf="passwordField.errors?.minlength">Password must be at least 4 characters long.</p>
+       </div>
+     </div>
+ 
+     <!-- Erreur de connexion -->
+     <div *ngIf="errorMessage" class="error">
+       <p>{{ errorMessage }}</p>
+     </div>
+ 
+     <!-- Bouton de connexion -->
+     <button type="submit" [disabled]="loginForm.invalid">Login</button>
+   </form>
+ </div>
+ 

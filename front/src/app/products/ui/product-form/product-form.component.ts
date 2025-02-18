@@ -43,7 +43,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
           name="description"
           rows="5" 
           cols="30" 
-          [(ngModel)]="editedProduct().description">
+          [(ngModel)]="editedProduct().description"
+          required>
         </textarea>
       </div>      
       <div class="form-field">
@@ -52,6 +53,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
           [options]="categories" 
           [(ngModel)]="editedProduct().category" 
           name="category"
+          required
           appendTo="body"
         />
       </div>

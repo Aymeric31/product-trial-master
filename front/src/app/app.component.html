@@ -6,6 +6,9 @@
         {{ title }}
     </div>
     <div class="p-toolbar-group-end">
+        <a routerLink="/login" class="">
+            <i class="pi pi-user" style="font-size: 2rem"></i>
+        </a>
         <a routerLink="/cart" class="shopping-cart-icon-container">
             <i class="pi pi-shopping-cart" style="font-size: 2rem"></i>
             <span *ngIf="cartService.getTotalItems() > 0" class="cart-item-count">

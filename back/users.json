@@ -12,5 +12,12 @@
     "firstname": "Jean",
     "email": "test2@mail.com",
     "password": "$2a$10$qMrdpq3PtEpAy.wFyrKc1eHiaB4DiH2dE2b3eJ2BTPgcBuFOfnYpa"
+  },
+  {
+    "id": 3,
+    "username": "Jean",
+    "firstname": "Jean",
+    "email": "admin@admin.com",
+    "password": "$2a$10$DbYcBIv3t8LyYyXeGTwVeuEZudwIqjWqpPar1pylNgX5A7pvmoMwK"
   }
 ]

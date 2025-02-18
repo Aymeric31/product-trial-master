@@ -1,6 +1,6 @@
 <h1 class="text-center">Liste des produits</h1>
 
-<p-button label="Créer produit" (onClick)="onCreate()" class="block text-center"/>
+<p-button *ngIf="isAdmin" label="Créer produit" (onClick)="onCreate()" class="block text-center"/>
 
 <p-dataView #dv [value]="products()">
     <ng-template pTemplate="list" let-products>
@@ -12,14 +12,14 @@
 
                 <div class="text-sm text-600">Prix: {{ product.price | currency: 'EUR' }}</div>
                 <div class="text-sm text-600 mt-1">Statut: {{ product.inventoryStatus }}</div>
-                <div class="text-sm text-600 mt-1">Créé le: {{ product.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
-                <div class="text-sm text-600 mt-1">Mis à jour le: {{ product.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+                <div *ngIf="isAdmin" class="text-sm text-600 mt-1">Créé le: {{ product.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+                <div *ngIf="isAdmin" class="text-sm text-600 mt-1">Mis à jour le: {{ product.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</div>
 
 
                 <ng-template pTemplate="footer">
                     <div class="flex gap-3 mt-1">
-                        <p-button label="Modifier" severity="secondary" (onClick)="onUpdate(product)"/>
-                        <p-button label="Supprimer" severity="danger" (onClick)="onDelete(product)" />
+                        <p-button *ngIf="isAdmin" label="Modifier" severity="secondary" (onClick)="onUpdate(product)"/>
+                        <p-button *ngIf="isAdmin" label="Supprimer" severity="danger" (onClick)="onDelete(product)" />
                         <p-button label="Ajouter au panier" severity="success" (onClick)="onAddToCart(product)" />
 
                     </div>

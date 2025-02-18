@@ -4,7 +4,15 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const app = express();
+const cors = require('cors');
+const corsOptions = {
+  origin: 'http://localhost:4200',  // Frontend Angular URL
+  methods: 'GET,POST,PUT,PATCH,DELETE',
+  allowedHeaders: 'Content-Type,Authorization'
+};
 
+// Enable CORS for all origins (can be restrictive based on your use case)
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const dotenv = require('dotenv');
@@ -33,7 +41,7 @@ const writeUsers = (users) => {
 // Check if the user is the admin
 const authenticateAdmin = (req, res, next) => {
   try {
-      const token = req.headers.authorization?.split(" ")[1]; // Récupérer le token après "Bearer"
+      const token = req.headers.authorization?.split(" ")[1]; // Get token after bearer
       if (!token) {
           return res.status(401).json({ message: "Access denied. No token provided." });
       }
@@ -77,6 +85,8 @@ app.listen(3000, () => {
   console.log("Server started on http://localhost:3000");
 });
 
+
+// USER ACCOUNT PART
 // Route to create an account
 app.post('/account', (req, res) => {
   const { username, firstname, email, password } = req.body;
@@ -126,9 +136,14 @@ app.post("/login", async (req, res) => {
   res.json({ message: "Connection success", token });
 });
 
-
+// PRODUCT PART
 app.post('/products', authenticateAdmin, (req, res) => {
-   const newProduct = req.body;
+  const { name, description, price, category } = req.body;
+
+     // Verify fields
+  if (!name || !description || !price || !category) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
    // Read existing products from the JSON file
    fs.readFile(PRODUCTS_FILE, "utf8", (err, data) => {
@@ -138,10 +153,17 @@ app.post('/products', authenticateAdmin, (req, res) => {
  
      let products = JSON.parse(data);
      
-     // Generate an Unique ID (simulated)
-     newProduct.id = products.length ? products[products.length - 1].id + 1 : 1;
-     newProduct.createdAt = Date.now();
-     newProduct.updatedAt = Date.now();
+    const newProduct = {
+      id: products.length ? products[products.length - 1].id + 1 : 1,  // Generate unique ID
+      name,
+      description, 
+      price,
+      category, 
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      inventoryStatus: "INSTOCK", 
+      rating: 0 
+    };
  
      // Add new product to the array
      products.push(newProduct);
@@ -350,6 +372,7 @@ app.delete("/cart/:userId/:productId", verifyToken, (req, res) => {
   res.json({ message: "Product removed from cart", cart: cart[userId] });
 });
 
+// Delete all the content from the cart by the user id
 app.delete("/cart/:userId", verifyToken, (req, res) => {
   const userId = req.params.userId;
   const tokenUserId = req.user.id; // Get userID from verifyToken
