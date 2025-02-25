@@ -6,7 +6,11 @@
     <ng-template pTemplate="list" let-products>
         @for (product of products; track product) {
             <p-card class="block mb-2">
-                <span class="font-medium text-secondary text-sm">{{ product.category }}</span>
+                <img [src]="product.image" alt="{{ product.name }}" class="w-full mb-4" />
+                <div class="mb-2">
+                    <span class="font-medium text-secondary text-sm">{{ product.category }}</span>
+                </div>
+            
                 <div class="text-lg font-medium text-900 mt-2">{{ product.name }}</div>
                 <div class="text-lg font-medium text-700 mt-2">{{ product.description }}</div>
 
@@ -20,7 +24,7 @@
                     <div class="flex gap-3 mt-1">
                         <p-button *ngIf="isAdmin" label="Modifier" severity="secondary" (onClick)="onUpdate(product)"/>
                         <p-button *ngIf="isAdmin" label="Supprimer" severity="danger" (onClick)="onDelete(product)" />
-                        <p-button label="Ajouter au panier" severity="success" (onClick)="onAddToCart(product)" />
+                        <p-button *ngIf="isAuthenticated" label="Ajouter au panier" severity="success" (onClick)="onAddToCart(product)" />
 
                     </div>
                 </ng-template>

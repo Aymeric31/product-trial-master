@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
@@ -13,17 +14,22 @@ export class AuthService {
 
   // Connection function
   login(email: string, password: string): Observable<any> {
-    // Save the email into local storage
-    localStorage.setItem('authEmail', email);
-    return this.http.post(this.apiUrl, { email, password });
+    return this.http.post<{ token: string }>(this.apiUrl, { email, password }).pipe(
+      tap(response => {
+        // Store token, l'ID et l'email into localStorage
+        this.saveToken(response.token, email);
+      })
+    );
   }
-
+  
   // Function to store credentials and expiration time information
-  saveToken(token: string): void {
+  saveToken(token: string, email: string): void {
     const expirationTime = new Date().getTime() + 60 * 60 * 1000; // 1 hour to milliseconds
     localStorage.setItem("authToken", token);
+    localStorage.setItem('authEmail', email);
     localStorage.setItem("authTokenExpiration", expirationTime.toString());
   }
+
   isTokenExpired(): boolean {
     const expiration = localStorage.getItem("authTokenExpiration");
     if (!expiration) return true;
@@ -34,6 +40,18 @@ export class AuthService {
   // Function to retrieve credentials
   getToken(): string | null {
     return localStorage.getItem('authToken');
+  }
+
+  getUserId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+    
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      return null;
+    }
   }
 
   // Get the user email

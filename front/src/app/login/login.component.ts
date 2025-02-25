@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { FormsModule } from "@angular/forms";
 import { InputTextModule } from "primeng/inputtext";
 import { CommonModule } from '@angular/common';
+import { CartService } from 'app/cart/data-access/cart.service';
 
 
 @Component({
@@ -16,8 +17,7 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,
     FormsModule,
-    InputTextModule,
-    
+    InputTextModule
   ],
 })
 export class LoginComponent implements OnInit {
@@ -29,6 +29,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private cartService: CartService,
     private router: Router
   ) {}
 
@@ -43,7 +44,8 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.email, this.password).pipe(
       tap((response) => {
-        this.authService.saveToken(response.token);
+        this.authService.saveToken(response.token, this.email);
+        this.cartService.getCart();
         this.router.navigate(['/products']);
       }),
       catchError(() => {

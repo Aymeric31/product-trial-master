@@ -1,32 +1,60 @@
-import { Injectable, signal } from '@angular/core';
-import { Product } from "app/products/data-access/product.model";
+import { Injectable, inject, signal } from "@angular/core";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { catchError, Observable, of, tap } from "rxjs";
+import { AuthService } from "app/auth.service";
+import { CartItem } from "./cart.model";
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  public cartItems = signal<Product[]>([]);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly path = "http://localhost:3000/cart";
 
-  addToCart(product: Product) {
-    const existingItems = this.cartItems();
-    const productExists = existingItems.some(item => item.id === product.id);
+  public _cartItems = signal<CartItem[]>([]);
+  public readonly cartItems = this._cartItems.asReadonly();
 
-    if (!productExists) {
-      // Add product to the cart if it doesn't exist already
-      this.cartItems.set([...existingItems, product]);
-    }
+  private getHeaders(): HttpHeaders {
+      const token = this.authService.getToken();
+      return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  removeFromCart(productId: number) {
-    this.cartItems.set(this.cartItems().filter(p => p.id !== productId));
+  public addToCart(item: CartItem): Observable<CartItem[]> {
+
+    return this.http.post<CartItem[]>(`${this.path}`, item, { headers: this.getHeaders() }).pipe(
+      tap((updatedCart: CartItem[]) => {
+        this._cartItems.set(updatedCart);
+      })
+    );
+  }
+  
+  public getCart(): Observable<CartItem[]> {
+    const userId = this.authService.getUserId();
+    if (!userId) return new Observable<CartItem[]>(); // Return empty Observable if userId null
+      return this.http.get<CartItem[]>(`${this.path}/${userId}`, { headers: this.getHeaders() }).pipe(
+        tap(cart => this._cartItems.set(cart)) // Update cart items
+    );
+  }
+  
+  public removeFromCart(productId: number): Observable<any> {
+    return this.http.delete(`${this.path}/${productId}`, { headers: this.getHeaders() }).pipe(
+      tap(() => {
+        this._cartItems.set(this._cartItems().filter(item => item.id !== productId));
+      }),
+      catchError(() => of(null))
+    );
   }
 
-  clearCart() {
-    this.cartItems.set([]);
+  public getTotalItems(): number {
+    const cartItems = this._cartItems();
+    return Array.isArray(cartItems) ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
   }
-
-  //  Get the total of items in the cart
-  getTotalItems(): number {
-    return this.cartItems().length;
+  
+  public clearCart(): Observable<any> {
+    return this.http.delete(`${this.path}`, { headers: this.getHeaders() }).pipe(
+      catchError(() => of(null))
+    );
   }
+  
 }

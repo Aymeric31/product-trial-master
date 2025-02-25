@@ -1,6 +1,6 @@
 <h2>Panier</h2>
-<div *ngIf="cartService.cartItems().length > 0; else emptyCart">
-  <div *ngFor="let item of cartService.cartItems()" class="cart-item">
+<div *ngIf="cartItems().length > 0; else emptyCart">
+  <div *ngFor="let item of cartItems()" class="cart-item">
     <img [src]="item.image" alt="{{ item.name }}">
     <div class="cart-details">
       <h3>{{ item.name }}</h3>
@@ -8,12 +8,7 @@
       <button (click)="removeItem(item.id)">Supprimer</button>
     </div>
   </div>
-
-  <div class="cart-summary">
-    <p><strong>Total articles :</strong> {{ cartService.cartItems().length }}</p>
-  </div>
-
-  <button class="clear-cart-btn" (click)="clearCart()">Vider le panier</button>
+  <button (click)="clearCart()">Vider le panier</button>
 </div>
 
 <ng-template #emptyCart>

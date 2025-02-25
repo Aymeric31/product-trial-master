@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from "@angular/core";
 import { Product } from "app/products/data-access/product.model";
 import { ProductsService } from "app/products/data-access/products.service";
 import { CartService } from "app/cart/data-access/cart.service";
+import { CartItem } from 'app/cart/data-access/cart.model';
 import { ProductFormComponent } from "app/products/ui/product-form/product-form.component";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
@@ -35,6 +36,7 @@ const emptyProduct: Product = {
   imports: [CommonModule, DataViewModule, CardModule, ButtonModule, DialogModule, ProductFormComponent, DatePipe, CurrencyPipe],
 })
 export class ProductListComponent implements OnInit {
+  
   private readonly productsService = inject(ProductsService);
 
   public readonly products = this.productsService.products;
@@ -54,6 +56,11 @@ export class ProductListComponent implements OnInit {
     return this.authService.isAdmin();
   }
 
+  // Verify if the user is logged in
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
   public onCreate() {
     this.isCreation = true;
     this.isDialogVisible = true;
@@ -69,12 +76,29 @@ export class ProductListComponent implements OnInit {
   public onDelete(product: Product) {
     this.productsService.delete(product.id).subscribe();
   }
-
+  private updateTotalItems(): void {
+    this.cartService.getTotalItems(); // Met à jour la valeur dans le service
+    console.log(this.cartService.getTotalItems());
+  }
   // Add to cart function
   public onAddToCart(product: any): void {
-    console.log('Produit ajouté au panier :', product);
-
-    this.cartService.addToCart(product);
+    const quantity = 1;
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      quantity: quantity,
+    };
+    // Ajoute l'article au panier via le service
+    this.cartService.addToCart(cartItem).subscribe(() => {
+      // Appel de getCart après l'ajout pour récupérer les articles mis à jour
+      this.cartService.getCart().subscribe((updatedCartItems: CartItem[]) => {
+        // Mets à jour le signal avec les nouveaux articles du panier
+        this.cartService._cartItems.set(updatedCartItems); // Mise à jour dans le signal
+        console.log('Panier mis à jour avec', updatedCartItems); // Pour vérifier la mise à jour
+      });
+    });
   }
 
   public onSave(product: Product) {

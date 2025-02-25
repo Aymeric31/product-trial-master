@@ -3,6 +3,7 @@ import { HomeComponent } from "./shared/features/home/home.component";
 import { CartComponent } from "./cart/features/cart.component";
 import { ContactComponent } from "./shared/features/contact/contact.component";
 import { LoginComponent } from "./login/login.component";
+import { authGuard } from './auth.guard';
 
 
 export const APP_ROUTES: Routes = [
@@ -18,6 +19,7 @@ export const APP_ROUTES: Routes = [
   {
     path: "cart",
     component: CartComponent,
+    canActivate: [authGuard],
   },
   {
     path: "contact",

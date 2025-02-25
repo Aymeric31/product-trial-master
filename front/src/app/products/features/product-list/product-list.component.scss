@@ -3,3 +3,9 @@
     height: 100%;
     overflow: auto;
 }
+.product-image {
+    width: 100%; /* Ajuste la largeur de l'image à 100% du conteneur */
+    height: auto; /* Laisse la hauteur s'ajuster automatiquement en fonction de la largeur */
+    object-fit: cover; /* Garde les proportions de l'image tout en remplissant le conteneur */
+    border-radius: 8px; /* Pour arrondir les bords de l'image (facultatif) */
+}

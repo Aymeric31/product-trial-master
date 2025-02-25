@@ -11,9 +11,9 @@
         </a>
         <a routerLink="/cart" class="shopping-cart-icon-container">
             <i class="pi pi-shopping-cart" style="font-size: 2rem"></i>
-            <span *ngIf="cartService.getTotalItems() > 0" class="cart-item-count">
-                {{ cartService.getTotalItems() }}
-              </span>
+            <span *ngIf="totalItems > 0" class="cart-item-count">
+                {{ totalItems }}
+              </span>              
         </a>
     </div>
 </p-toolbar>
