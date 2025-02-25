@@ -133,7 +133,7 @@ app.post("/login", async (req, res) => {
   // Token generation with jsonwebtoken
   const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
 
-  res.json({ message: "Connection success", token });
+  res.json({ message: "Connection success", token, userId: user.id });
 });
 
 // PRODUCT PART
@@ -302,9 +302,9 @@ const writeCart = (cart) => {
 //ENDPOINT
 // Create cart with products
 app.post("/cart", verifyToken, (req, res) => {
-  const { productId, name, quantity, price } = req.body;
-
-  if (!productId || !quantity || !price) {
+  const { id, name, image, quantity, price } = req.body;
+  
+  if (!id || !name || !quantity || !price) {
       return res.status(400).json({ message: "Missing required fields" });
   }
 
@@ -317,12 +317,12 @@ app.post("/cart", verifyToken, (req, res) => {
       cart[userId] = [];
   }
 
-  const existingProduct = cart[userId].find(p => p.id === productId);
+  const existingProduct = cart[userId].find(p => p.id === id);
 
   if (existingProduct) {
       existingProduct.quantity += quantity;
   } else {
-      cart[userId].push({ id: productId, name, quantity, price });
+      cart[userId].push({ id: id, name, image, quantity, price });
   }
 
   writeCart(cart);
@@ -343,16 +343,10 @@ app.get("/cart/:userId", verifyToken, (req, res) => {
 });
 
 // Delete a product from cart
-app.delete("/cart/:userId/:productId", verifyToken, (req, res) => {
-  const userId = req.params.userId;
+app.delete("/cart/:productId", verifyToken, (req, res) => {
   const productId = parseInt(req.params.productId, 10);
-  const tokenUserId = req.user.id; // Get userID from verifyToken
+  const userId = req.user.id; // Get userID from verifyToken
   let cart = readCart();
-
-  // Check if userId into URL match userId from the token
-  if (userId !== tokenUserId.toString()) {
-    return res.status(403).json({ message: "You cannot modify this cart" });
-  }
 
   if (!cart[userId]) {
       return res.status(404).json({ message: "Cart not found" });
@@ -373,15 +367,9 @@ app.delete("/cart/:userId/:productId", verifyToken, (req, res) => {
 });
 
 // Delete all the content from the cart by the user id
-app.delete("/cart/:userId", verifyToken, (req, res) => {
-  const userId = req.params.userId;
-  const tokenUserId = req.user.id; // Get userID from verifyToken
+app.delete("/cart", verifyToken, (req, res) => {
+  const userId = req.user.id; // Get userID from verifyToken
   let cart = readCart();
-
-  // Check if userId into URL match userId from the token
-  if (userId !== tokenUserId.toString()) {
-    return res.status(403).json({ message: "You cannot modify this cart" });
-  }
 
   if (!cart[userId]) {
       return res.status(404).json({ message: "Cart not found" });
